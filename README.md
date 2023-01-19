@@ -45,4 +45,4 @@ Summarizing, there will be four following steps if you decide to redeploy the sm
 
 # More detailed information
 
-For more detailed information about the project and how it works, check the Proof_of_Concept.md file.
+For more detailed information about the project and how it works, check the [Proof_of_Concept](./Proof_of_Concept.md) file.
