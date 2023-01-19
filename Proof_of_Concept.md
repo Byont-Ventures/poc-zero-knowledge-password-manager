@@ -29,7 +29,9 @@
 
 # Introduction
 
-This document shows the details of Proof of Concept: the idea, how it works, and how it is implemented. Moreover, the previous Proof of Concept ideas are also mentioned here in case anyone finds them attractive and/or decides to develop them.
+Firstly, the Proof of Concept is a realization of a certain method or idea in order to demonstrate its feasibility. ([source](https://en.wikipedia.org/wiki/Proof_of_concept))
+
+This document shows the details of the Proof of Concept: the idea, how it works, and how it is implemented. Moreover, the previous Proof of Concept ideas are also mentioned here in case anyone finds them attractive and/or decides to develop them.
 
 It is also worth mentioning that this project is not stable and is not production ready (yet). Moreover, the ***arkworks*** repositories used for Zero-Knowledge Proof usage should not be used in production either.
 
@@ -69,8 +71,8 @@ At some point, the password is separated into two parts: pass and word.
 3. Then this hash is separated into two parts: $pass$ and $word$.
 4. The $pass$ and $word$ are also hashed.
 5. Although the $wallet$ is already a hash, it is hashed to make it similar to other hashes.
-6. The $hash$ value is calculated using the following equation: $wallet * pass = hash + word$.
-7. The calculated $hash$ value is then submitted to the smart contract, which has a mapping that keeps track of the user $wallet$s and user calculated $hash$es.
+6. The $hash$ value is calculated using the following equation: $wallet * pass = hash + word$, so $hash = wallet * pass - word$.
+7. The calculated $hash$ value is then submitted to the smart contract, which has a mapping that keeps track of the user $wallets$ and user calculated $hashes$.
 
 ### 1.1.3 Zero-Knowledge verification
 
@@ -79,24 +81,26 @@ At some point, the password is separated into two parts: pass and word.
 3. Then the user $password$ is hashed.
 4. Then this hash is separated into two parts: $pass$ and $word$.
 5. The $pass$ and $word$ are also hashed.
-6. In the end, we submit these values, do the ***arkworks*** magic and get a *bool* as a response: *true* if the password is correct, *false* if it is not.
-    1. If you want to learn how the password is verified using ***arkworks*** (which utilizes *zk-SNARK* logic), check the *Details/Arkworks* section.
+6. In the end, we submit these values, use the ***arkworks***  for their verification, and get a *bool* as a response: *true* if the password is correct, *false* if it is not.
+    1. If you want to learn how the password is verified using ***arkworks*** (which utilizes *zk-SNARK* logic), check [Arkworks](#21-arkworks).
 
 ## 1.2 Potential advantages
 
 ### 1.2.1 Rainbow table resistance
 
+If you don't know what a Rainbow table is, check the [source](https://en.wikipedia.org/wiki/Rainbow_table) first. 
+
 The public hash stored on a smart contract is never the same for any pair of users. This is because the public hash calculation depends on the user’s wallet address, which is unique. If two users have the same password, their public hashes will differ.
 
 ### 1.2.2 Random final output
 
-***Prerequisite:*** Check the Details/Arkworks before reading further for better understanding.
+***Prerequisite:*** Check the [Arkworks](#21-arkworks) before reading further for better understanding.
 
 When verifying a password with ***arkworks*** in the end, two Pedersen commitments are compared with each other $commitment_a == commitment_b$, where $commitment_a = C(hash)$ and $commitment_b = C(wallet * pass - word)$. Here $C()$ is a function that converts an input into a corresponding Pedersen commitment. Let’s say the final commitments should equal a particular final value $final = commitment_a = commitment_b$. It would be easier to hack the password if the hacker knew this $final$ value. However, when calculating commitments, a random value is always used, which means that during every new verification, the same input: $hash$, $wallet$, and $password$ will produce different commitments $commitment_{a_1}, commitment_{a_2}, commitment_{b_1}, commitment_{b_2}$, where $commitment_{a_1} ~!= commitment_{a_2}$ and $commitment_{b_1} ~!= commitment_{b_2}$, while $commitment_{a_1} == commitment_{b_1}$ and $commitment_{a_2} == commitment_{b_2}$. This also means that the corresponding final values $final_1$ and $final_2$ will never be equal.
 
 ### 1.2.3 API features
 
-The backend part of the application, which is responsible for Public hash generation and password verification with ZKP, acts as an API. The smart contract that stores public hashes in it is shown only as an example. It can be easily substituted with any other smart contract with similar mapping. Other web3 projects and organizations can easily inherit this application’s functionality.
+The backend part of the application, which is responsible for Public hash generation and password verification with Zero-Knowledge Proof (ZKP), acts as an API. The smart contract that stores public hashes in it is shown only as an example. It can be substituted with any other smart contract, which has the mapping of $wallet$ - $hash$ pairs and methods for adding new $hashes$ and getting already existing ones. Thus, other web3 projects and organizations can use Zero-Knowledge Password Manager functionality in their own smart contracts. 
 
 ## 1.3 Potential vulnerabilities
 
@@ -124,7 +128,9 @@ The users could verify their password only several times per specific time perio
 
 Shnorr signatures can be used to verify that the user trying to prove the password is an account owner. It can be used to access the public hash only when its owner is trying to pass a verification.
 
-I believe that combination of this password manager and the Shnorr signature can also be seen as a web3 version of the two-step verification.
+The combination of this password manager and the Shnorr signature can also be seen as a web3 version of the two-step verification.
+
+_**Note:**_ This idea may be redundant, as the smart contract side maps the public hashes with wallet addresses, and the hash is returned according to the `msg.sender` parameter. This means that every time a person verifies their password, the smart contract sends the public hash according to the user’s wallet address. So, the smart contract does the user verification for us.    
 
 # 2 Details
 
@@ -132,7 +138,7 @@ I believe that combination of this password manager and the Shnorr signature can
 
 This is how the password verification happens in the ***arkworks*** section after receiving the values $hash$, $pass$, $word$, and $wallet$.
 
-It will be separated into two smaller parts, Circuit and *Groth16*, to make understanding the workflow of Zero-Knowledge usage easier.
+It will be separated into two smaller parts, [Circuit](#211-circuit) and [Groth16](#212-groth16), to make understanding the workflow of Zero-Knowledge usage easier.
 
 1. However, a Pedersen commitment ( $commitment_a$ ) is created with a $hash$ as an input. This happens before any *Circuit* or *Groth16* logic.
 
@@ -150,7 +156,7 @@ It will be separated into two smaller parts, Circuit and *Groth16*, to make und
 This section shows how the Zero-Knowledge setup is constructed and how it works in this application.
 
 1. First of all, a circuit with dummy data is created. (reason for dummy data is explained later)
-2. Then this circuit is supplied to the Groth16 setup function, which returns a proving key ($pk$) and a verification key ($vk$).
+2. Then this circuit is supplied to the Groth16 setup function, which returns a proving key ( $pk$ ) and a verification key ( $vk$ ).
     1. It is needed to supply a circuit for the setup because $pk$ and $vk$ are also connected to a particular circuit structure. It means that if you have a different circuit and $pk_2$ and $vk_2$ generated by supplying this circuit, when you will try to use a pair $pk$ and $vk_2$ or a pair $pk_2$ and $vk$, you will get an Error and the verification will fail.
     2. Also, we provide dummy data here because the provided data is irrelevant in this step. The $pk$ and $vk$ are only bonded with the structure of the circuit, and the data is not taken into consideration during the bonding process. The only requirement from the data is to be correct (meaning that it should pass the checks in the circuit); otherwise, the Error will be thrown from the circuit itself.
 3. After key generation, the circuit with actual data is created.
