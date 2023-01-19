@@ -45,4 +45,4 @@ Summarizing, there will be four following steps if you decide to redeploy the sm
 
 # More detailed information
 
-More detailed information about, how the application works, the logic behind it and what is actually happening, will be explained in the document, that will also be attached to this project 
+For more detailed information about the project and how it works, check the Proof_of_Concept.md file.
