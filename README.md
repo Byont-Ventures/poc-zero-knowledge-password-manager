@@ -43,6 +43,12 @@ Summarizing, there will be four following steps if you decide to redeploy the sm
    2. Then run `npm start`.
 3. If the tab didn't open automatically, go to the `localhost:3000` in the browser (Note: it is usually `localhost:3000`, but you may also have `localhost:8080` instead).
 
+# Anonymous Voting Ideas
+
+This Zero-Knowledge Password Manager idea for a Proof of Concept was not the first one. Anonymous Voting was the initial idea for the Proof of Concept project, yet it was infeasible to complete it due to time constraints. 
+
+The file [Anonymous Voting Ideas](./Anonymous_Voting_Ideas.md) shows these initial ideas and explains how they were supposed to work. This file is included for the people enthusiastic to continue developing these ideas.
+
 # More detailed information
 
-More detailed information about, how the application works, the logic behind it and what is actually happening, will be explained in the document, that will also be attached to this project 
+For more detailed information about the project and how it works, check the [Proof_of_Concept](./Proof_of_Concept.md) file.
