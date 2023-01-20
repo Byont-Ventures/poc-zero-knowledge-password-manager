@@ -148,7 +148,7 @@ It will be separated into two smaller parts, [Circuit](#211-circuit) and [Groth1
 
 1. All three values: $pass$, $word$, and $wallet$ are declared as *witnesses.*
 2. Then we calculate the $hash_2$ value from the following equation: $wallet * pass = hash + word$, which means that the $hash_2$ value is equal to $hash_2 = wallet * pass - word$.
-   1. The values $hash_2$ and $hash$ are **_not_** the same! The $hash$ was calculated in the first password insertion. The $hash_2$ value is created during the verification process to prove that the password is correct. The $hash_2$ is calculated with the same equation as $hash$. So, **_only if_** the password is correct the following will be true: $hash_2 = wallet * pass - word = hash$ if the password is wrong $hash_2 != hash$. 
+   1. The values $hash_2$ and $hash$ are **_not_** the same! The $hash$ was calculated in the first password insertion. The $hash_2$ value is created during the verification process to prove that the password is correct. The $hash_2$ is calculated with the same equation as $hash$. So, **_only if_** the password is correct the following will be true: $hash_2 = wallet * pass - word = hash$ if the password is wrong $hash_2 ~!= hash$. 
 3. After that, the $hash_2$ value is used to create another Pedersen commitment: $commitmnet_b$.
 4. In the end, the circuit checks the validity of the following expression: $commitment_a == commitment_b$.
 
